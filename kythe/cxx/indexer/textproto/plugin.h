@@ -57,8 +57,7 @@ class PluginApi {
 
   // Returns a pointer to the descriptor pool built from the .proto files
   // included as dependencies in the textproto's compilation unit.
-  virtual const google::protobuf::DescriptorPool* ProtoDescriptorPool()
-      const = 0;
+  virtual const proto2::DescriptorPool* ProtoDescriptorPool() const = 0;
 };
 
 struct StringToken {
@@ -69,7 +68,7 @@ struct StringToken {
   absl::string_view source_text;
 };
 
-// Superclass for all plugins. A new plugin is instantated for each textproto
+// Superclass for all plugins. A new plugin is instantiated for each textproto
 // handled by the indexer.
 class Plugin {
  public:
@@ -93,6 +92,15 @@ class Plugin {
       PluginApi* api, const proto::VName& file_vname,
       const google::protobuf::FieldDescriptor& field,
       const std::vector<StringToken>& tokens) = 0;
+
+  // Optional entrypoint for integer fields. Plugin may override it to add
+  // additional nodes for integer fields.
+  virtual absl::Status AnalyzeIntegerField(PluginApi* api,
+                                           const proto::VName& file_vname,
+                                           const proto2::FieldDescriptor& field,
+                                           absl::string_view field_value) {
+    return absl::OkStatus();
+  }
 
  protected:
   Plugin(const Plugin&) = delete;
